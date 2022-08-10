@@ -1,10 +1,16 @@
 import time
 import torch
 import numpy as np
+from numpy import genfromtxt
 from transnetv2_pytorch import TransNetV2
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+import imageio.v3 as iio
+import os
 
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 video_path = "/home/deng/data/video_info_extraction/code/utils/test.mp4"
+file_name = video_path.split('/')[-1].split('.')[0]
+
 model = TransNetV2(device=device)
 state_dict = torch.load("transnetv2-pytorch-weights.pth")
 model.load_state_dict(state_dict)
@@ -17,9 +23,16 @@ with torch.no_grad():
     single_frame_predictions = single_frame_predictions.cpu().detach().numpy()
     all_frame_predictions = all_frame_predictions.cpu().detach().numpy()
     scenes = model.predictions_to_scenes(single_frame_predictions)
-    np.savetxt('test.csv', scenes, delimiter=',') 
     # model.visualize_predictions(video_frames, predictions=(single_frame_predictions, all_frame_predictions)).save("img1.png")
-    
-    print(time.time() - start,"single_frame_predictions",single_frame_predictions.shape)
-    print('scenes', scenes.shape)
+    print(time.time() - start,"detection finished!")
+    start = time.time()
+    scenes = scenes.reshape(-1) #???? fist image + last image per scene or ?????
+    np.savetxt(f'{file_name}.csv', scenes, delimiter=',')
+    if len(scenes) > 0:
+        if not os.path.exists(f'{file_name}'):
+            os.makedirs(f'{file_name}')
+        for idx, frame in enumerate(iio.imiter(video_path)):
+            if idx in scenes:
+                iio.imwrite(f"{file_name}/frame{idx:03d}.jpg", frame)
+    print(time.time() - start,'Image saved!')
     # model.predictions_to_scenes(single_frame_predictions)

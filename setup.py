@@ -11,14 +11,11 @@ setup(
     # ],
     entry_points={
         "console_scripts": [
-            "transnetv2_predict = transnetv2.transnetv2:main",
+            # "transnetv2_predict = transnetv2.transnetv2:main", # Path no longer valid with inference-pytorch
         ]
     },
     packages=["transnetv2"],
-    package_dir={"transnetv2": "./inference"},
-    package_data={"transnetv2": [
-        "transnetv2-weights/*",
-        "transnetv2-weights/variables/*"
-    ]},
+    package_dir={"transnetv2": "inference-pytorch"},
+    package_data={"transnetv2": ["transnetv2-pytorch-weights.pth"]},
     zip_safe=False
 )
